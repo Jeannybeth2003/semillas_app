@@ -166,6 +166,7 @@ class _VillageScreenState extends State<VillageScreen> {
     Color color,
     String route,
   ) {
+    print('Navigating to route: $route'); // Debugging line
     return GestureDetector(
       onTap: () {
         if (route.isNotEmpty) {
