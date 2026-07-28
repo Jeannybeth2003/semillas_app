@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:semillas_app/core/router/router.dart';
 import 'package:semillas_app/core/database/database_helper.dart';
 import '../layouts/base_layout.dart';
-import '../../widgets/conuco_interactivo.dart'; 
+import '../../widgets/conuco_interactivo.dart';
 
 class VillageScreen extends StatefulWidget {
   final String leaderName;
@@ -56,64 +56,65 @@ class _VillageScreenState extends State<VillageScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BaseLayout(
-      backgroundPath: 'assets/images/Conuco_bg.webp',
-      child: Stack(
-        children: [
+    return Scaffold(
+      body: BaseLayout(
+        backgroundPath: 'assets/images/Conuco_bg.webp',
+        child: Stack(
+          children: [
+            const ConucoInteractivo(),
 
-          const ConucoInteractivo(),
-
-          Positioned(
-            bottom: 20,
-            left: 20,
-            child: FloatingActionButton(
-              backgroundColor: const Color(0xFFD84315),
-              onPressed: () => context.go('/'),
-              child: const Icon(
-                Icons.home_rounded,
-                color: Colors.white,
-                size: 30,
+            Positioned(
+              bottom: 20,
+              left: 20,
+              child: FloatingActionButton(
+                backgroundColor: const Color(0xFFD84315),
+                onPressed: () => context.go('/'),
+                child: const Icon(
+                  Icons.home_rounded,
+                  color: Colors.white,
+                  size: 30,
+                ),
               ),
             ),
-          ),
 
-          Positioned(top: 20, left: 20, child: _buildUserPanel()),
+            Positioned(top: 20, left: 20, child: _buildUserPanel()),
 
-          Positioned(
-            top: 20,
-            right: 20,
-            bottom: 20,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _navBtn(
-                  context,
-                  Icons.rowing,
-                  const Color(0xFF0288D1),
-                  AppRoutes.curiaraTravel,
-                ),
-                _navBtn(
-                  context,
-                  Icons.person_2_sharp,
-                  const Color(0xFFD84315),
-                  AppRoutes.grandfather,
-                ),
-                _navBtn(
-                  context,
-                  Icons.menu_book,
-                  const Color(0xFF388E3C),
-                  AppRoutes.ebook,
-                ),
-                _navBtn(
-                  context,
-                  Icons.workspace_premium,
-                  const Color(0xFFFF8F00),
-                  '',
-                ), 
-              ],
+            Positioned(
+              top: 20,
+              right: 20,
+              bottom: 20,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _navBtn(
+                    context,
+                    Icons.rowing,
+                    const Color(0xFF0288D1),
+                    AppRoutes.curiaraTravel,
+                  ),
+                  _navBtn(
+                    context,
+                    Icons.person_2_sharp,
+                    const Color(0xFFD84315),
+                    AppRoutes.grandfather,
+                  ),
+                  _navBtn(
+                    context,
+                    Icons.menu_book,
+                    const Color(0xFF388E3C),
+                    AppRoutes.ebook,
+                  ),
+                  _navBtn(
+                    context,
+                    Icons.workspace_premium,
+                    const Color(0xFFFF8F00),
+                    '',
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -166,7 +167,7 @@ class _VillageScreenState extends State<VillageScreen> {
     Color color,
     String route,
   ) {
-    print('Navigating to route: $route'); // Debugging line
+    // Debugging line
     return GestureDetector(
       onTap: () {
         if (route.isNotEmpty) {

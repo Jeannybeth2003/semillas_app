@@ -8,12 +8,11 @@ import 'package:semillas_app/core/models/device_model.dart';
 class P2PService extends ChangeNotifier {
   static const String serviceType = '_snap360p2p._tcp';
 
-  // Configuración
   final String deviceName;
 
   // Estado
-  List<DeviceModel> _discoveredDevices = [];
-  List<DeviceModel> _connectedDevices = [];
+  final List<DeviceModel> _discoveredDevices = [];
+  final List<DeviceModel> _connectedDevices = [];
   bool _isPublishing = false;
   bool _isScanning = false;
   String _status = 'Inactivo';
@@ -37,7 +36,6 @@ class P2PService extends ChangeNotifier {
 
   P2PService({required this.deviceName});
 
-  // ============ PUBLICAR DISPOSITIVO ============
   Future<void> startPublishing() async {
     await _stopPublishingOnly();
 
@@ -79,7 +77,6 @@ class P2PService extends ChangeNotifier {
     }
   }
 
-  // ============ ESCANEAR DISPOSITIVOS ============
   Future<void> startScanning() async {
     await _stopDiscoveryOnly();
 
@@ -117,7 +114,6 @@ class P2PService extends ChangeNotifier {
     }
   }
 
-  // ============ CONECTAR A DISPOSITIVO ============
   Future<bool> connectToDevice(DeviceModel device) async {
     if (_connectedDevices.any((d) => d.id == device.id)) {
       _status = 'Ya estás conectado a este dispositivo';
@@ -162,14 +158,11 @@ class P2PService extends ChangeNotifier {
         cancelOnError: true,
       );
 
-      // Enviar HELLO
       socket.writeln('HELLO:$deviceName');
 
-      // Marcar como conectado
       final updatedDevice = device.copyWith(isConnected: true);
       _connectedDevices.add(updatedDevice);
 
-      // Remover de descubiertos si existe
       _discoveredDevices.removeWhere((d) => d.id == device.id);
 
       _status = 'Conectado a ${device.name}';
@@ -187,7 +180,6 @@ class P2PService extends ChangeNotifier {
     }
   }
 
-  // ============ DESCONECTAR DISPOSITIVO ============
   void disconnectDevice(String deviceId) {
     _disconnectDevice(deviceId);
   }
@@ -199,7 +191,6 @@ class P2PService extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ============ MANEJO DE CONEXIONES ENTRANTES ============
   void _handleIncomingConnection(Socket socket) {
     String buffer = '';
     String? peerId;
@@ -257,7 +248,6 @@ class P2PService extends ChangeNotifier {
     }
   }
 
-  // ============ MANEJO DE DESCUBRIMIENTO ============
   void _handleServiceDiscovery(Service service, ServiceStatus status) {
     debugPrint(
       'NSD: $status | '
@@ -300,7 +290,6 @@ class P2PService extends ChangeNotifier {
       notifyListeners();
     }
 
-    // El controlador solo necesita conectar con otros dos dispositivos.
     if (_connectedDevices.length < 2) {
       unawaited(connectToDevice(device));
     }
@@ -316,7 +305,6 @@ class P2PService extends ChangeNotifier {
     return service.host;
   }
 
-  // ============ MANEJO DE RESPUESTAS ============
   void _handlePeerResponse(String deviceId, String message) {
     if (message.startsWith('ACK:')) {
       final peerName = message.substring('ACK:'.length);
@@ -325,7 +313,6 @@ class P2PService extends ChangeNotifier {
     }
   }
 
-  // ============ LIMPIEZA ============
   Future<void> stop() async {
     await _shutdown();
     _isPublishing = false;
