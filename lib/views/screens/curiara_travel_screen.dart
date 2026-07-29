@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:semillas_app/core/models/device_model.dart';
+import 'package:semillas_app/core/router/router.dart';
 import 'package:semillas_app/services/p2p_service.dart';
 import 'package:semillas_app/widgets/device_list_widget.dart';
+import 'package:semillas_app/views/screens/trade_screen.dart';
 import '../layouts/base_layout.dart';
 
 class CuriaraTravelScreen extends StatefulWidget {
@@ -38,6 +42,13 @@ class _CuriaraTravelScreenState extends State<CuriaraTravelScreen> {
           child: _buildContent(),
         );
       },
+    );
+  }
+
+  void _abrirIntercambio(DeviceModel device) {
+    context.push(
+      AppRoutes.trade,
+      extra: {'p2pService': _p2pService, 'device': device},
     );
   }
 
@@ -104,7 +115,11 @@ class _CuriaraTravelScreenState extends State<CuriaraTravelScreen> {
           ),
           const SizedBox(height: 16),
           Expanded(
-            child: DeviceListWidget(p2pService: _p2pService, onConnect: () {}),
+            child: DeviceListWidget(
+              p2pService: _p2pService,
+              onConnect: _abrirIntercambio,
+              onOpenTrade: _abrirIntercambio,
+            ),
           ),
         ],
       ),

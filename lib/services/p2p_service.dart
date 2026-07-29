@@ -5,6 +5,16 @@ import 'package:nsd/nsd.dart';
 import 'package:flutter/material.dart';
 import 'package:semillas_app/core/models/device_model.dart';
 
+/// Mensaje genérico de aplicación recibido de un peer (ej. ofertas de
+/// intercambio, confirmaciones, cancelaciones). Se transporta como una
+/// línea 'MSG:<json>\n' sobre el mismo socket usado para HELLO/ACK.
+class P2PMessage {
+  final String deviceId;
+  final Map<String, dynamic> data;
+
+  const P2PMessage({required this.deviceId, required this.data});
+}
+
 class P2PService extends ChangeNotifier {
   static const String serviceType = '_snap360p2p._tcp';
 
@@ -25,6 +35,10 @@ class P2PService extends ChangeNotifier {
   final Map<String, Socket> _sockets = {};
   final Set<String> _connectingIds = {};
 
+  // Mensajería genérica de aplicación (ej. intercambio de semillas)
+  final StreamController<P2PMessage> _messageController =
+      StreamController<P2PMessage>.broadcast();
+
   // Getters
   List<DeviceModel> get discoveredDevices => _discoveredDevices;
   List<DeviceModel> get connectedDevices => _connectedDevices;
@@ -34,7 +48,21 @@ class P2PService extends ChangeNotifier {
   String? get error => _error;
   int get connectedCount => _connectedDevices.length;
 
+  /// Stream de mensajes de aplicación recibidos de cualquier peer conectado.
+  /// Filtra por `deviceId` en el listener para escuchar solo a un peer.
+  Stream<P2PMessage> get messages => _messageController.stream;
+
   P2PService({required this.deviceName});
+
+  /// Envía un payload JSON arbitrario al dispositivo conectado [deviceId].
+  void sendMessage(String deviceId, Map<String, dynamic> payload) {
+    final socket = _sockets[deviceId];
+    if (socket == null) {
+      debugPrint('P2P: no hay conexión activa con $deviceId');
+      return;
+    }
+    socket.writeln('MSG:${jsonEncode(payload)}');
+  }
 
   Future<void> startPublishing() async {
     await _stopPublishingOnly();
@@ -204,7 +232,30 @@ class P2PService extends ChangeNotifier {
         while ((newLineIndex = buffer.indexOf('\n')) >= 0) {
           final line = buffer.substring(0, newLineIndex).trim();
           buffer = buffer.substring(newLineIndex + 1);
-          _handleIncomingMessage(socket, line, (id) => peerId = id);
+
+          if (line.startsWith('HELLO:')) {
+            final controllerName = line.substring('HELLO:'.length);
+            final id = 'controller_${DateTime.now().millisecondsSinceEpoch}';
+            peerId = id;
+
+            socket.writeln('ACK:$deviceName');
+
+            final device = DeviceModel(
+              id: id,
+              name: controllerName,
+              host: socket.remoteAddress.address,
+              port: socket.remotePort,
+              isConnected: true,
+              isController: true,
+            );
+
+            _sockets[id] = socket;
+            _connectedDevices.add(device);
+            _status = 'Conectado con $controllerName';
+            notifyListeners();
+          } else if (line.startsWith('MSG:') && peerId != null) {
+            _handleIncomingTradeMessage(peerId!, line.substring('MSG:'.length));
+          }
         }
       },
       onDone: () {
@@ -218,34 +269,6 @@ class P2PService extends ChangeNotifier {
       onError: (_) => socket.destroy(),
       cancelOnError: true,
     );
-  }
-
-  void _handleIncomingMessage(
-    Socket socket,
-    String message,
-    Function(String) setPeerId,
-  ) {
-    if (message.startsWith('HELLO:')) {
-      final controllerName = message.substring('HELLO:'.length);
-      final id = 'controller_${DateTime.now().millisecondsSinceEpoch}';
-      setPeerId(id);
-
-      socket.writeln('ACK:$deviceName');
-
-      final device = DeviceModel(
-        id: id,
-        name: controllerName,
-        host: socket.remoteAddress.address,
-        port: socket.remotePort,
-        isConnected: true,
-        isController: true,
-      );
-
-      _sockets[id] = socket;
-      _connectedDevices.add(device);
-      _status = 'Conectado con $controllerName';
-      notifyListeners();
-    }
   }
 
   void _handleServiceDiscovery(Service service, ServiceStatus status) {
@@ -310,6 +333,17 @@ class P2PService extends ChangeNotifier {
       final peerName = message.substring('ACK:'.length);
       _status = 'Respuesta recibida de $peerName';
       notifyListeners();
+    } else if (message.startsWith('MSG:')) {
+      _handleIncomingTradeMessage(deviceId, message.substring('MSG:'.length));
+    }
+  }
+
+  void _handleIncomingTradeMessage(String deviceId, String jsonStr) {
+    try {
+      final data = jsonDecode(jsonStr) as Map<String, dynamic>;
+      _messageController.add(P2PMessage(deviceId: deviceId, data: data));
+    } catch (e) {
+      debugPrint('P2P: mensaje inválido recibido de $deviceId: $e');
     }
   }
 
@@ -371,6 +405,7 @@ class P2PService extends ChangeNotifier {
   @override
   void dispose() {
     _shutdown();
+    _messageController.close();
     super.dispose();
   }
 }

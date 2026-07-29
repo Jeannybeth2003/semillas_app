@@ -11,6 +11,14 @@ class ConucoInteractivo extends StatefulWidget {
 }
 
 class _ConucoInteractivoState extends State<ConucoInteractivo> {
+  static const Map<String, int> _cantidadSemillas = {
+    'cacao': 2,
+    'maiz': 3,
+    'melon': 5,
+    'patilla': 3,
+    'platano': 4,
+    'yuca': 4,
+  };
   List<ParcelaModel> _parcelas = [];
   String _herramientaActiva = '';
   bool _isLoading = true;
@@ -192,19 +200,19 @@ class _ConucoInteractivoState extends State<ConucoInteractivo> {
   String _obtenerImagenSemilla(String cultivo) {
     switch (cultivo) {
       case 'cacao':
-        return 'Cacao_Semilla.png';
+        return 'cacao_semilla.png';
       case 'maiz':
-        return 'Maíz_Semilla.png';
+        return 'maiz_semilla.png';
       case 'melon':
-        return 'Melón_Semilla.png';
+        return 'melon_semilla.png';
       case 'patilla':
-        return 'Patilla_Semilla.png';
+        return 'patilla_semilla.png';
       case 'platano':
-        return 'Platano_Semilla.png';
+        return 'platano_semilla.png';
       case 'yuca':
-        return 'Yuca_Semilla.png';
+        return 'yuca_semilla.png';
       default:
-        return 'Cacao_Semilla.png';
+        return 'cacao_semilla.png';
     }
   }
 
@@ -225,7 +233,7 @@ class _ConucoInteractivoState extends State<ConucoInteractivo> {
   Widget _obtenerSprite(ParcelaModel parcela) {
     if (parcela.estado == EstadoParcela.conMaleza) {
       return Image.asset(
-        'assets/images/sprites/Maleza.png',
+        'assets/images/sprites/maleza.png',
         width: 65,
         height: 65,
       );
@@ -350,6 +358,8 @@ class _ConucoInteractivoState extends State<ConucoInteractivo> {
     String nombre,
     String idCultivo,
   ) {
+    final cantidad = _cantidadSemillas[idCultivo] ?? 1;
+
     return GestureDetector(
       onTap: () async {
         Navigator.pop(context);
@@ -358,6 +368,7 @@ class _ConucoInteractivoState extends State<ConucoInteractivo> {
           parcela.id.toString(),
           idCultivo,
           "1",
+          cantidad,
         );
 
         setState(() {
@@ -384,6 +395,10 @@ class _ConucoInteractivoState extends State<ConucoInteractivo> {
               nombre,
               style: const TextStyle(color: Colors.white, fontSize: 14),
             ),
+            Text(
+              'x$cantidad',
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
+            ),
           ],
         ),
       ),
@@ -401,11 +416,11 @@ class _ConucoInteractivoState extends State<ConucoInteractivo> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _iconoHerramienta('Machete', 'Machete.png'),
-          _iconoHerramienta('Pala', 'Pala.png'),
-          _iconoHerramienta('Semillas', 'Cacao_Semilla.png'),
-          _iconoHerramienta('Regadera', 'Regadera.png'),
-          _iconoHerramienta('Cesta', 'Cesta.png'),
+          _iconoHerramienta('Machete', 'machete.png'),
+          _iconoHerramienta('Pala', 'pala.png'),
+          _iconoHerramienta('Semillas', 'cacao_semilla.png'),
+          _iconoHerramienta('Regadera', 'regadera.png'),
+          _iconoHerramienta('Cesta', 'cesta.png'),
         ],
       ),
     );

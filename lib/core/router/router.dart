@@ -3,6 +3,7 @@ import 'package:semillas_app/views/screens/curiara_travel_screen.dart';
 import 'package:semillas_app/views/screens/ebook_screen.dart';
 import 'package:semillas_app/views/screens/grandfather_screen.dart';
 import 'package:semillas_app/views/screens/start_screen.dart';
+import 'package:semillas_app/views/screens/trade_screen.dart';
 import 'package:semillas_app/views/screens/village_screen.dart';
 import 'package:semillas_app/views/screens/creation_screen.dart';
 
@@ -13,6 +14,7 @@ class AppRoutes {
   static const String grandfather = '/grandfather';
   static const String ebook = '/ebook';
   static const String creation = '/creation';
+  static const String trade = '/trade'; // <-- 1. Nueva ruta
 
   static final GoRouter router = GoRouter(
     initialLocation: start,
@@ -55,6 +57,20 @@ class AppRoutes {
         path: ebook,
         name: 'ebook',
         builder: (context, state) => const EbookScreen(),
+      ),
+      // <-- 2. Agregar el GoRoute para TradeScreen
+      GoRoute(
+        path: trade,
+        name: 'trade',
+        builder: (context, state) {
+          // Recibimos los objetos complejos a través de un Map en 'extra'
+          final args = state.extra as Map<String, dynamic>;
+
+          return TradeScreen(
+            p2pService: args['p2pService'],
+            device: args['device'],
+          );
+        },
       ),
     ],
   );
