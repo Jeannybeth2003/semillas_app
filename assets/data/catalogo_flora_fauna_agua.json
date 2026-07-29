@@ -1,0 +1,86 @@
+[
+  {
+    "id": 1,
+    "name": "Moriche Palm",
+    "imagePath": "assets/images/moriche.png",
+    "type": "planta"
+  },
+  {
+    "id": 2,
+    "name": "Victoria Amazónica",
+    "imagePath": "assets/images/victoria_amazonica.png",
+    "type": "planta"
+  },
+  {
+    "id": 3,
+    "name": "Arbol de Cedro",
+    "imagePath": "assets/images/cedro.png",
+    "type": "planta"
+  },
+  {
+    "id": 4,
+    "name": "Arbol de Ceiba",
+    "imagePath": "assets/images/ceiba.png",
+    "type": "planta"
+  },
+  {
+    "id": 5,
+    "name": "Heliconia",
+    "imagePath": "assets/images/heliconia.png",
+    "type": "planta"
+  },
+  {
+    "id": 6,
+    "name": "Guacamaya",
+    "imagePath": "assets/images/guacamaya.png",
+    "type": "animal"
+  },
+  {
+    "id": 7,
+    "name": "Danta",
+    "imagePath": "assets/images/danta.png",
+    "type": "animal"
+  },
+  {
+    "id": 8,
+    "name": "Anaconda Verde",
+    "imagePath": "assets/images/anaconda_verde.png",
+    "type": "animal"
+  },
+  {
+    "id": 9,
+    "name": "Mono Aullador",
+    "imagePath": "assets/images/mono_aullador.png",
+    "type": "animal"
+  },
+  {
+    "id": 10,
+    "name": "Tucan De Pecho Rojo",
+    "imagePath": "assets/images/tucan.png",
+    "type": "animal"
+  },
+  {
+    "id": 11,
+    "name": "Agua Dulce",
+    "imagePath": "assets/images/rio_amazonas.webp",
+    "type": "agua"
+  },
+  {
+    "id": 12,
+    "name": "Rio Orinoco",
+    "imagePath": "assets/images/rio_orinoco.jpg",
+    "type": "agua"
+  },
+  {
+    "id": 13,
+    "name": "Rio Ventuari",
+    "imagePath": "assets/images/rio_ventuari.jpg",
+    "type": "agua"
+  },
+  {
+    "id": 14,
+    "name": "Laguna Tapahara",
+    "imagePath": "assets/images/laguna_tapahara.jpg",
+    "type": "agua"
+  }
+]

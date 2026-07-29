@@ -1,0 +1,29 @@
+{
+  "historias": [
+    {
+      "id": 1,
+      "titulo": "El Origen del Conuco",
+      "contenido": "Hace muchas lunas, los ancestros descubrieron que la tierra hablaba a través de las semillas..."
+    },
+    {
+      "id": 2,
+      "titulo": "El Camino del Río",
+      "contenido": "La curiara no solo flota sobre el agua, flota sobre la historia de nuestro pueblo..."
+    },
+    {
+      "id": 3,
+      "titulo": "El Secreto del Moriche",
+      "contenido": "Del árbol de la vida, el moriche, se extrae el sustento y el color de nuestras tradiciones..."
+    },
+    {
+      "id": 4,
+      "titulo": "La Leyenda del Caroní",
+      "contenido": "Aguas oscuras que guardan los misterios de las piedras antiguas y el canto de la lluvia..."
+    },
+    {
+      "id": 5,
+      "titulo": "El Guardián de la Selva",
+      "contenido": "Cada animal y planta en el ecosistema tiene un propósito asignado por los primeros abuelos..."
+    }
+  ]
+}
