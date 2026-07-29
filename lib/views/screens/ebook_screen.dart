@@ -64,7 +64,7 @@ class _EbookScreenState extends State<EbookScreen> {
       if (kIsWeb) {
         idsDescubiertos = _idsDescubiertosEnWeb;
       } else {
-        idsDescubiertos = await DatabaseHelper.instance.getDescubiertos();
+        idsDescubiertos = await DatabaseHelper.instance.obtenerDescubiertos();
       }
 
       List<EbookItem> plantas = [];

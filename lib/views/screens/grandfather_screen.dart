@@ -3,14 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../layouts/base_layout.dart';
-
-
+import '../../../core/database/database_helper.dart';
+ 
 class Historia {
   final int id;
   final String titulo;
   final String contenido;
+  bool leido; 
 
-  Historia({required this.id, required this.titulo, required this.contenido});
+  Historia({
+    required this.id, 
+    required this.titulo, 
+    required this.contenido,
+    this.leido = false,
+  });
 
   factory Historia.fromJson(Map<String, dynamic> json) {
     return Historia(
@@ -33,39 +39,65 @@ class _GrandfatherScreenState extends State<GrandfatherScreen> {
   Historia? _historiaSeleccionada;
   bool _isLoading = true;
 
+  // SOLUCIÓN ESCALABILIDAD: Identificamos que esta pantalla corresponde al Nivel 1
+  final int _nivelActual = 1;
+
   @override
   void initState() {
     super.initState();
     _cargarCuentos();
   }
 
-  // Tarea 3: Lógica para leer el JSON local
+  // TAREA 1 Y 2: Carga el JSON y filtra de SQLite solo los cuentos de ESTE nivel
   Future<void> _cargarCuentos() async {
     try {
       final String response = await rootBundle.loadString('assets/data/cuentos_nivel1.json');
       final data = json.decode(response);
       final List<dynamic> listaJson = data['historias'];
 
+      // Consumimos el método corregido pasándole el nivel actual (1)
+      final List<int> idsLeidos = await DatabaseHelper.instance.obtenerCuentosLeidosPorNivel(_nivelActual);
+
       setState(() {
-        _historias = listaJson.map((item) => Historia.fromJson(item)).toList();
+        _historias = listaJson.map((item) {
+          final historia = Historia.fromJson(item);
+          // La comparación sigue siendo directa y limpia
+          if (idsLeidos.contains(historia.id)) {
+            historia.leido = true;
+          }
+          return historia;
+        }).toList();
+
         if (_historias.isNotEmpty) {
-          _historiaSeleccionada = _historias.first; // Inicializa con la primera historia
+          _historiaSeleccionada = _historias.first;
         }
         _isLoading = false;
       });
     } catch (e) {
-      debugPrint("Error cargando el JSON de cuentos: $e");
+      debugPrint("Error cargando el JSON o SQLite en cuentos: $e");
       setState(() => _isLoading = false);
     }
+  }
+
+  // TAREA 3: Guarda el ID del cuento vinculado a su nivel en SQLite
+  Future<void> _marcarComoLeido(Historia historia) async {
+    if (historia.leido) return;
+
+    // Mandamos tanto el ID del cuento (1, 2, 3...) como el nivel (1)
+    await DatabaseHelper.instance.guardarCuentoLeido(historia.id, _nivelActual);
+
+    setState(() {
+      historia.leido = true; // El check verde aparece inmediatamente
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return BaseLayout(
-      backgroundPath: 'assets/images/Abuelo_bg.webp', // Ruta del fondo solicitada
+      backgroundPath: 'assets/images/Abuelo_bg.webp',
       child: Stack(
         children: [
-          // Botón para regresar al Conuco (Usa el mismo diseño circular de la app)
+          // Botón Regresar
           Positioned(
             bottom: 20,
             left: 20,
@@ -77,24 +109,14 @@ class _GrandfatherScreenState extends State<GrandfatherScreen> {
                   color: const Color(0xFFD84315),
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white, width: 3),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black54,
-                      blurRadius: 5,
-                      offset: Offset(0, 5),
-                    ),
-                  ],
+                  boxShadow: const [BoxShadow(color: Colors.black54, blurRadius: 5, offset: Offset(0, 5))],
                 ),
-                child: const Icon(
-                  Icons.arrow_back_rounded,
-                  color: Colors.white,
-                  size: 30,
-                ),
+                child: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 30),
               ),
             ),
           ),
 
-          // Contenido Principal de la UI del Abuelo
+          // Contenido Principal
           Positioned.fill(
             child: SafeArea(
               child: _isLoading
@@ -103,10 +125,10 @@ class _GrandfatherScreenState extends State<GrandfatherScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
                       child: Row(
                         children: [
-                          // Tarea 2: Menú lateral de 5 botones (Temas)
+                          // Menú lateral
                           Container(
-                            width: 150,
-                            margin: const EdgeInsets.only(bottom: 80), // Espacio para el botón regresar
+                            width: 160,
+                            margin: const EdgeInsets.only(bottom: 80),
                             child: ListView.builder(
                               itemCount: _historias.length,
                               itemBuilder: (context, index) {
@@ -117,14 +139,13 @@ class _GrandfatherScreenState extends State<GrandfatherScreen> {
                                   padding: const EdgeInsets.symmetric(vertical: 6.0),
                                   child: GestureDetector(
                                     onTap: () {
-                                      // Tarea 3: Actualizar texto en pantalla usando setState
                                       setState(() {
                                         _historiaSeleccionada = historia;
                                       });
                                     },
                                     child: AnimatedContainer(
                                       duration: const Duration(milliseconds: 200),
-                                      padding: const EdgeInsets.all(12),
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
                                       decoration: BoxDecoration(
                                         color: isSelected ? const Color(0xFFD84315) : Colors.white.withValues(alpha: 0.85),
                                         borderRadius: BorderRadius.circular(15),
@@ -132,18 +153,28 @@ class _GrandfatherScreenState extends State<GrandfatherScreen> {
                                           color: isSelected ? Colors.white : const Color(0xFFD84315).withValues(alpha: 0.5),
                                           width: 2,
                                         ),
-                                        boxShadow: const [
-                                          BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2)),
-                                        ],
                                       ),
-                                      child: Text(
-                                        historia.titulo,
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          color: isSelected ? Colors.white : Colors.black87,
-                                        ),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              historia.titulo,
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                                color: isSelected ? Colors.white : Colors.black87,
+                                              ),
+                                            ),
+                                          ),
+                                          if (historia.leido) ...[
+                                            const SizedBox(width: 4),
+                                            Icon(
+                                              Icons.check_circle_rounded,
+                                              color: isSelected ? Colors.greenAccent : Colors.green,
+                                              size: 18,
+                                            ),
+                                          ]
+                                        ],
                                       ),
                                     ),
                                   ),
@@ -153,7 +184,7 @@ class _GrandfatherScreenState extends State<GrandfatherScreen> {
                           ),
                           const SizedBox(width: 20),
 
-                          // Pantalla Narrativa que renderiza la historia seleccionada
+                          // Pantalla Narrativa
                           Expanded(
                             child: _historiaSeleccionada == null
                                 ? const Center(child: Text("Selecciona un tema ancestral"))
@@ -162,34 +193,57 @@ class _GrandfatherScreenState extends State<GrandfatherScreen> {
                                     decoration: BoxDecoration(
                                       color: Colors.white.withValues(alpha: 0.9),
                                       borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(color: const Color(0xFFFFC107), width: 3), // Borde dorado estilo panel
-                                      boxShadow: const [
-                                        BoxShadow(color: Colors.black38, blurRadius: 10, offset: Offset(0, 4)),
-                                      ],
+                                      border: Border.all(color: const Color(0xFFFFC107), width: 3),
                                     ),
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           _historiaSeleccionada!.titulo,
-                                          style: const TextStyle(
-                                            fontSize: 22,
-                                            fontWeight: FontWeight.w900,
-                                            color: Color(0xFFD84315),
-                                          ),
+                                          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFFD84315)),
                                         ),
                                         const Divider(height: 20, thickness: 2, color: Color(0xFFFFC107)),
                                         Expanded(
                                           child: SingleChildScrollView(
                                             physics: const BouncingScrollPhysics(),
-                                            child: Text(
-                                              _historiaSeleccionada!.contenido,
-                                              style: const TextStyle(
-                                                fontSize: 16,
-                                                color: Colors.black87,
-                                                height: 1.6,
-                                                fontWeight: FontWeight.w500,
-                                              ),
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                                              children: [
+                                                Text(
+                                                  _historiaSeleccionada!.contenido,
+                                                  style: const TextStyle(fontSize: 16, color: Colors.black87, height: 1.6, fontWeight: FontWeight.w500),
+                                                ),
+                                                const SizedBox(height: 25),
+                                                
+                                                // Botón interactivo condicional
+                                                _historiaSeleccionada!.leido
+                                                    ? const Center(
+                                                        child: Padding(
+                                                          padding: EdgeInsets.symmetric(vertical: 10),
+                                                          child: Row(
+                                                            mainAxisAlignment: MainAxisAlignment.center,
+                                                            children: [
+                                                              Icon(Icons.done_all_rounded, color: Colors.green),
+                                                              SizedBox(width: 8),
+                                                              Text("¡Cuento completado!", style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 15)),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      )
+                                                    : Padding(
+                                                        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+                                                        child: ElevatedButton(
+                                                          style: ElevatedButton.styleFrom(
+                                                            backgroundColor: const Color(0xFFFF8F00),
+                                                            foregroundColor: Colors.white,
+                                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                                            padding: const EdgeInsets.symmetric(vertical: 12),
+                                                          ),
+                                                          onPressed: () => _marcarComoLeido(_historiaSeleccionada!),
+                                                          child: const Text("Terminar Lectura", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                                                        ),
+                                                      ),
+                                              ],
                                             ),
                                           ),
                                         ),
