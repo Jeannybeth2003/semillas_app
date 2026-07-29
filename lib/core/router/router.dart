@@ -14,7 +14,7 @@ class AppRoutes {
   static const String grandfather = '/grandfather';
   static const String ebook = '/ebook';
   static const String creation = '/creation';
-  static const String trade = '/trade'; // <-- 1. Nueva ruta
+  static const String trade = '/trade';
 
   static final GoRouter router = GoRouter(
     initialLocation: start,
@@ -58,12 +58,10 @@ class AppRoutes {
         name: 'ebook',
         builder: (context, state) => const EbookScreen(),
       ),
-      // <-- 2. Agregar el GoRoute para TradeScreen
       GoRoute(
         path: trade,
         name: 'trade',
         builder: (context, state) {
-          // Recibimos los objetos complejos a través de un Map en 'extra'
           final args = state.extra as Map<String, dynamic>;
 
           return TradeScreen(
